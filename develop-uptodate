@@ -60,4 +60,3 @@ def assert_has_ancestor(ref: str) -> None:
 
 if __name__ == "__main__":
     main()
-    assert False, "would normally succeed"
