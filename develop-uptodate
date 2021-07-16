@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+
+
+from fnmatch import fnmatch
+import sys
+import argparse
+import subprocess
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("paths", nargs="*")
+    parser.add_argument("--remote", default="origin")
+    parser.add_argument("--main", default="main", help="name of the main branch")
+    parser.add_argument(
+        "--develop", default="develop", help="name of the develop branch"
+    )
+    parser.add_argument(
+        "--hotfix-glob",
+        help="glob to match branches which are hotfixes off main",
+        default="*-hotfix",
+    )
+    parser.add_argument(
+        "--include-branch-glob",
+        help="glob to match branches where this check applies",
+        action="append",
+    )
+    args = parser.parse_args()
+    subprocess.run(
+        ["git", "fetch", args.remote, args.develop], check=True, capture_output=True
+    )
+    subprocess.run(
+        ["git", "fetch", args.remote, args.main], check=True, capture_output=True
+    )
+
+    if is_hotfix(glob=args.hotfix_glob):
+        assert_has_ancestor(ref=f"{args.remote}/{args.main}")
+    else:
+        assert_has_ancestor(ref=f"{args.remote}/{args.develop}")
+
+
+def is_hotfix(glob: str) -> bool:
+    branch_name = subprocess.check_output(
+        ["git", "branch", "--show-current"], encoding="utf-8"
+    )
+    return fnmatch(branch_name, glob)
+
+
+def assert_has_ancestor(ref: str) -> None:
+    try:
+        subprocess.run(
+            ["git", "merge-base", "--is-ancestor", ref, "HEAD"],
+            check=True,
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError:
+        print(f"{ref} is not an ancestor of the current commit")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+    assert False, "would normally succeed"

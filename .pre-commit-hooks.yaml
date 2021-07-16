@@ -3,5 +3,5 @@
   name: Ensure up to date with respect to develop
   description: Develop is fetched and feature branches are based on head of develop
   entry: develop-uptodate
-  language: python
+  language: script
   always_run: true
