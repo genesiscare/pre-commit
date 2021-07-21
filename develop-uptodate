@@ -27,10 +27,10 @@ def main() -> None:
     )
     args = parser.parse_args()
     subprocess.run(
-        ["git", "fetch", args.remote, args.develop], check=True, capture_output=True
+        ["git", "fetch", args.remote, args.develop], check=True, capture_output=False
     )
     subprocess.run(
-        ["git", "fetch", args.remote, args.main], check=True, capture_output=True
+        ["git", "fetch", args.remote, args.main], check=True, capture_output=False
     )
 
     if is_hotfix(glob=args.hotfix_glob):
