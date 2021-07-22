@@ -5,12 +5,12 @@ from fnmatch import fnmatch
 import sys
 import argparse
 import subprocess
+import snoop
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("paths", nargs="*")
-    parser.add_argument("--remote", default="origin")
     parser.add_argument("--main", default="main", help="name of the main branch")
     parser.add_argument(
         "--develop", default="develop", help="name of the develop branch"
@@ -21,7 +21,7 @@ def main() -> None:
         default="*-hotfix",
     )
     parser.add_argument(
-        "--include-branch-glob",
+        "--exclude-glob",
         help="glob to match branches where this check applies",
         action="append",
     )
@@ -29,8 +29,12 @@ def main() -> None:
     develop_upstream = fetch(branch=args.develop)
     main_upstream = fetch(branch=args.main)
 
-    if is_hotfix(glob=args.hotfix_glob):
+    if matches_globs(args.hotfix_glob):
         assert_has_ancestor(ref=main_upstream)
+    elif matches_globs(args.main):
+        print("this branch is main, so is automatically exempt")
+    elif matches_globs(*args.exclude_glob):
+        print("this branch is exempt")
     else:
         assert_has_ancestor(ref=develop_upstream)
 
@@ -54,11 +58,19 @@ def fetch(branch: str) -> str:
     return f"{upstream}/{branch}"
 
 
-def is_hotfix(glob: str) -> bool:
-    branch_name = subprocess.check_output(
-        ["git", "branch", "--show-current"], encoding="utf-8"
-    )
-    return fnmatch(branch_name, glob)
+@snoop
+def matches_globs(*globs: str) -> bool:
+    """
+    Does the current branch name match at least one of the globs
+    provided?
+    """
+    for glob in globs:
+        branch_name = subprocess.check_output(
+            ["git", "branch", "--show-current"], encoding="utf-8"
+        ).strip()
+        if fnmatch(branch_name, glob):
+            return True
+    return False
 
 
 def assert_has_ancestor(ref: str) -> None:
