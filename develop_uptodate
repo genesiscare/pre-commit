@@ -26,17 +26,32 @@ def main() -> None:
         action="append",
     )
     args = parser.parse_args()
-    subprocess.run(
-        ["git", "fetch", args.remote, args.develop], check=True, capture_output=False
-    )
-    subprocess.run(
-        ["git", "fetch", args.remote, args.main], check=True, capture_output=False
-    )
+    develop_upstream = fetch(branch=args.develop)
+    main_upstream = fetch(branch=args.main)
 
     if is_hotfix(glob=args.hotfix_glob):
-        assert_has_ancestor(ref=f"{args.remote}/{args.main}")
+        assert_has_ancestor(ref=main_upstream)
     else:
-        assert_has_ancestor(ref=f"{args.remote}/{args.develop}")
+        assert_has_ancestor(ref=develop_upstream)
+
+
+def fetch(branch: str) -> str:
+    """
+    Returns the remote tracking ref (e.g. origin/master)
+    """
+    upstream, _branch = (
+        subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", f"{branch}@{{u}}"],
+            capture_output=True,
+            check=True,
+            encoding="utf-8",
+        )
+        .stdout.strip()
+        .split("/", 1)
+    )
+    assert _branch == branch
+    subprocess.run(["git", "fetch", upstream, branch], capture_output=True, check=True)
+    return f"{upstream}/{branch}"
 
 
 def is_hotfix(glob: str) -> bool:

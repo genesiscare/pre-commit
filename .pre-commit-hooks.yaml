@@ -2,6 +2,7 @@
 - id: develop-uptodate
   name: Ensure up to date with respect to develop
   description: Develop is fetched and feature branches are based on head of develop
-  entry: develop-uptodate
+  entry: develop_uptodate
+  pass_filenames: false
   language: script
   always_run: true
