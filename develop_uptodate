@@ -5,7 +5,6 @@ from fnmatch import fnmatch
 import sys
 import argparse
 import subprocess
-import snoop
 
 
 def main() -> None:
@@ -58,7 +57,6 @@ def fetch(branch: str) -> str:
     return f"{upstream}/{branch}"
 
 
-@snoop
 def matches_globs(*globs: str) -> bool:
     """
     Does the current branch name match at least one of the globs
