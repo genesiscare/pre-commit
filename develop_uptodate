@@ -28,7 +28,7 @@ def main() -> None:
     develop_upstream = fetch(branch=args.develop)
     main_upstream = fetch(branch=args.main)
 
-    if matches_globs(args.hotfix_glob):
+    if matches_globs(args.hotfix_glob, args.develop):
         assert_has_ancestor(ref=main_upstream)
     elif matches_globs(args.main):
         print("this branch is main, so is automatically exempt")
