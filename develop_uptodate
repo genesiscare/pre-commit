@@ -45,7 +45,7 @@ def fetch(branch: str) -> str:
     upstream, _branch = (
         subprocess.run(
             ["git", "rev-parse", "--abbrev-ref", f"{branch}@{{u}}"],
-            capture_output=True,
+            stdout=subprocess.PIPE,
             check=True,
             encoding="utf-8",
         )
