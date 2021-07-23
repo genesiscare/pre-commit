@@ -40,16 +40,20 @@ def fetch(branch: str) -> str:
     """
     Returns the remote tracking ref (e.g. origin/master)
     """
-    upstream, _branch = (
-        subprocess.run(
-            ["git", "rev-parse", "--abbrev-ref", f"{branch}@{{u}}"],
-            stdout=subprocess.PIPE,
-            check=True,
-            encoding="utf-8",
+    try:
+        upstream, _branch = (
+            subprocess.run(
+                ["git", "rev-parse", "--abbrev-ref", f"{branch}@{{u}}"],
+                stdout=subprocess.PIPE,
+                check=True,
+                encoding="utf-8",
+            )
+            .stdout.strip()
+            .split("/", 1)
         )
-        .stdout.strip()
-        .split("/", 1)
-    )
+    except subprocess.CalledProcessError:
+        # Probably running in CI, with no upstream.
+        return branch
     assert _branch == branch
     subprocess.run(["git", "fetch", upstream, branch], capture_output=True, check=True)
     return f"{upstream}/{branch}"
