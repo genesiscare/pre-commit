@@ -66,7 +66,7 @@ def matches_globs(*globs: str) -> bool:
     """
     for glob in globs:
         branch_name = subprocess.check_output(
-            ["git", "branch", "--show-current"], encoding="utf-8"
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"], encoding="utf-8"
         ).strip()
         if fnmatch(branch_name, glob):
             return True
