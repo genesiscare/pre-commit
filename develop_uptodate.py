@@ -15,7 +15,7 @@ def main() -> None:
     parser.add_argument(
         "--hotfix-glob",
         help="glob to match branches which are hotfixes off main",
-        default="*-hotfix",
+        action="append",
     )
     parser.add_argument(
         "--exclude-glob",
@@ -26,7 +26,7 @@ def main() -> None:
     develop_upstream = fetch(branch=args.develop)
     main_upstream = fetch(branch=args.main)
 
-    if matches_globs(args.hotfix_glob, args.develop):
+    if matches_globs(args.develop, *args.hotfix_glob):
         assert_has_ancestor(ref=main_upstream)
     elif matches_globs(args.main):
         print("this branch is main, so is automatically exempt")
